@@ -1,0 +1,129 @@
+class BookingChatbot:
+    def __init__(self):
+        self.reservations = []
+        self.availability = {
+            "Monday": ["6:00 PM", "7:00 PM", "8:00 PM"],
+            "Tuesday": ["6:00 PM", "7:00 PM", "8:00 PM"],
+            "Wednesday": ["6:00 PM", "7:00 PM", "8:00 PM"],
+            "Thursday": ["6:00 PM", "7:00 PM", "8:00 PM"],
+            "Friday": ["6:00 PM", "7:00 PM", "8:00 PM"],
+            "Saturday": ["6:00 PM", "7:00 PM", "8:00 PM"],
+            "Sunday": ["6:00 PM", "7:00 PM", "8:00 PM"],
+        }
+        self.customers = {}  # Store customer balance information
+
+    def welcome_message(self):
+        print("\nWelcome to The Hunt Resturant! How can I assist you today?")
+        print("1. Check availability of Table")
+        print("2. Make a reservation (requires payment)")
+        print("3. Cancel a reservation (refund process)")
+        print("4. Exit")
+
+    def show_availability(self, day):
+        if day in self.availability:
+            if self.availability[day]:
+                print(f"\nAvailable times for {day}: {', '.join(self.availability[day])}")
+            else:
+                print(f"\nSorry, we are fully booked for {day}.")
+        else:
+            print("\nInvalid day. Please select a valid day (Monday-Sunday).")
+
+    def display_payment_options(self):
+        print("\nPlease choose your payment amount:")
+        print("1. ₹1000")
+        print("2. ₹2000")
+        print("3. ₹3000")
+        print("4. ₹4000")
+        print("5. ₹5000")
+        print("6. ₹6000")
+
+        while True:
+            choice = input("Enter your choice (1-6): ")
+            if choice == "1":
+                return 1000
+            elif choice == "2":
+                return 2000
+            elif choice == "3":
+                return 3000
+            elif choice == "4":
+                return 4000
+            elif choice == "5":
+                return 5000
+            elif choice == "6":
+                return 6000
+            else:
+                print("Invalid choice. Please select again.")
+
+    def make_payment(self, name, amount):
+        if name in self.customers:
+            self.customers[name]["balance"] -= amount
+        else:
+            self.customers[name] = {"balance": -amount}
+        print(f"\nPayment of ₹{amount} processed successfully for {name}. Your balance is now ₹{self.customers[name]['balance']}.")
+
+    def make_reservation(self, name, day, time):
+        if day in self.availability and time in self.availability[day]:
+            self.reservations.append({"name": name, "day": day, "time": time})
+            self.availability[day].remove(time)
+            payment_amount = self.display_payment_options()
+            self.make_payment(name, payment_amount)
+            print(f"\nReservation confirmed for {name} on {day} at {time}.")
+        else:
+            print("\nSorry, the selected time is unavailable.")
+
+    def refund_payment(self, name, amount):
+        if name in self.customers:
+            self.customers[name]["balance"] += amount
+            print(f"\n₹{amount} has been refunded to {name}. Your balance is now ₹{self.customers[name]['balance']}.")
+        else:
+            print(f"\nNo payment record found for {name}.")
+
+    def cancel_reservation(self, name):
+        reservation_found = False
+        for reservation in self.reservations:
+            if reservation["name"] == name:
+                day = reservation["day"]
+                time = reservation["time"]
+                self.availability[day].append(time)
+                self.reservations.remove(reservation)
+
+                # Refund the full payment (assuming the reservation amount was the max ₹6000)
+                refund_amount = 6000
+                self.refund_payment(name, refund_amount)
+                print(f"\nReservation for {name} on {day} at {time} has been canceled.")
+                reservation_found = True
+                break
+
+        if not reservation_found:
+            print(f"\nNo reservation found for {name}.")
+
+    def run(self):
+        while True:
+            self.welcome_message()
+            choice = input("\nPlease enter the number of your choice: ")
+
+            if choice == "1":
+                day = input("\nEnter the day you want to check availability for (e.g., Monday): ")
+                self.show_availability(day)
+
+            elif choice == "2":
+                name = input("\nEnter your name: ")
+                day = input("Enter the day you want to make a reservation for (e.g., Monday): ")
+                time = input("Enter the time you want to reserve (e.g., 6:00 PM): ")
+                self.make_reservation(name, day, time)
+
+            elif choice == "3":
+                name = input("\nEnter the name under the reservation to cancel: ")
+                self.cancel_reservation(name)
+
+            elif choice == "4":
+                print("\nThank you for using our restaurant chatbot. Goodbye!")
+                break
+
+            else:
+                print("\nInvalid option. Please try again.")
+
+
+# Running the chatbot
+chatbot = BookingChatbot()
+chatbot.run()
